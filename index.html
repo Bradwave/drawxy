@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drawing to XY Arrays</title>
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <!-- Import Space Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <header>
+                <h1>XY DRAWING TOOL</h1>
+                <p>Based on <a href="https://lazybrush.dulnan.net/" target="_blank">Lazy Brush</a> by Dulnan.</p>
+            </header>
+
+            <!-- GROUP 1: CANVAS SETTINGS -->
+            <div class="section-title">Canvas Settings</div>
+            <div class="control-group">
+                <div class="control-row">
+                    <span class="control-label">Size</span>
+                    <div class="inputs-compact">
+                        <input type="number" id="width-input" value="400" title="Width">
+                        <span style="color: var(--color-text-muted)">x</span>
+                        <input type="number" id="height-input" value="600" title="Height">
+                    </div>
+                </div>
+
+                <div class="control-row">
+                    <span class="control-label">Grid</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="grid-check">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="control-row">
+                    <span class="control-label">Cartesian Axis</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="cartesian-check">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <button id="create-btn" class="primary" style="width: 100%; margin-top: 4px;">
+                    <span class="material-symbols-outlined">crop_free</span>
+                    Update Canvas
+                </button>
+            </div>
+
+
+            <!-- GROUP 2: BRUSH SETTINGS -->
+            <div class="section-title" style="margin-top: 12px;">Brush & Mode</div>
+            <div class="control-group">
+                <div class="tool-toggle">
+                    <div class="tool-option active" id="mode-draw" onclick="setMode('draw')">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">draw</span> DRAW
+                    </div>
+                    <div class="tool-option" id="mode-select" onclick="setMode('select')">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">near_me</span> SELECT
+                    </div>
+                </div>
+
+                <div class="control-item">
+                    <div class="control-label">Lazy Radius: <span id="radius-val">10</span></div>
+                    <input type="range" id="radius-slider" min="0" max="100" value="10">
+                </div>
+
+                <div class="control-item">
+                    <div class="control-label">Brush Size: <span id="brush-size-val">3</span></div>
+                    <input type="range" id="brush-size-slider" min="1" max="20" step="1" value="3">
+                </div>
+
+                <div class="control-item">
+                    <div class="control-label">Friction: <span id="friction-val">0.4</span></div>
+                    <input type="range" id="friction-slider" min="0.05" max="1" step="0.05" value="0.4">
+                </div>
+
+                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                    <button id="delete-btn" class="danger" disabled style="flex: 1;">
+                        <span class="material-symbols-outlined">delete</span>
+                        Delete Sel.
+                    </button>
+                    <button id="clear-btn" style="flex: 1;">
+                        <span class="material-symbols-outlined">delete_sweep</span>
+                        Clear All
+                    </button>
+                </div>
+            </div>
+
+            <!-- GROUP 3: DFT ANALYSIS -->
+            <div class="section-title"
+                style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <span>DFT Analysis</span>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 0.7rem; text-transform: none; font-weight: 400;">Decimals:</span>
+                    <input type="number" id="dft-decimals-input" value="2" min="0" max="10"
+                        style="width: 40px; padding: 2px 4px; font-size: 0.8rem;">
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="control-row">
+                    <span class="control-label">Fourier coefficients (N)</span>
+                    <input type="number" id="dft-n-input" value="10" min="1" step="1" title="Order">
+                </div>
+                <input type="range" id="dft-n-slider" min="1" max="100" step="1" value="10">
+
+                <p style="font-size: 0.7rem; color: var(--color-text-muted); margin: 8px 0 0 0;">
+                    Order: 0, 1, -1, 2, -2 ...
+                </p>
+
+                <!-- DFT Outputs -->
+                <div class="output-group">
+                    <div class="output-header">
+                        <span class="output-label">Angular velocity (v)</span>
+                        <div class="copy-actions">
+                            <button class="copy-btn icon-only" id="copy-n-data" title="Copy Array"><span
+                                    class="material-symbols-outlined">data_array</span></button>
+                            <button class="copy-btn icon-only" id="copy-n-full" title="Copy Full"><span
+                                    class="material-symbols-outlined">content_copy</span></button>
+                        </div>
+                    </div>
+                    <textarea id="n-output" readonly></textarea>
+                </div>
+                <div class="output-group">
+                    <div class="output-header">
+                        <span class="output-label">Magnitude (R)</span>
+                        <div class="copy-actions">
+                            <button class="copy-btn icon-only" id="copy-r-data" title="Copy Array"><span
+                                    class="material-symbols-outlined">data_array</span></button>
+                            <button class="copy-btn icon-only" id="copy-r-full" title="Copy Full"><span
+                                    class="material-symbols-outlined">content_copy</span></button>
+                        </div>
+                    </div>
+                    <textarea id="r-output" readonly></textarea>
+                </div>
+
+                <div class="output-group">
+                    <div class="output-header">
+                        <span class="output-label">Phase (phi)</span>
+                        <div class="copy-actions">
+                            <button class="copy-btn icon-only" id="copy-phi-data" title="Copy Array"><span
+                                    class="material-symbols-outlined">data_array</span></button>
+                            <button class="copy-btn icon-only" id="copy-phi-full" title="Copy Full"><span
+                                    class="material-symbols-outlined">content_copy</span></button>
+                        </div>
+                    </div>
+                    <textarea id="phi-output" readonly></textarea>
+                </div>
+            </div>
+
+
+            <!-- GROUP 4: COORDINATES -->
+            <div class="section-title"
+                style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <span>Coordinates</span>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 0.7rem; text-transform: none; font-weight: 400;">Decimals:</span>
+                    <input type="number" id="coord-decimals-input" value="2" min="0" max="10"
+                        style="width: 40px; padding: 2px 4px; font-size: 0.8rem;">
+                </div>
+            </div>
+            <div class="control-group">
+
+                <div class="output-group">
+                    <div class="output-header">
+                        <span class="output-label">X Coords</span>
+                        <div class="copy-actions">
+                            <button class="copy-btn icon-only" id="copy-x-data" title="Copy Array"><span
+                                    class="material-symbols-outlined">data_array</span></button>
+                            <button class="copy-btn icon-only" id="copy-x-full" title="Copy Full"><span
+                                    class="material-symbols-outlined">content_copy</span></button>
+                        </div>
+                    </div>
+                    <textarea id="x-output" readonly onclick="this.select()"></textarea>
+                </div>
+
+                <div class="output-group">
+                    <div class="output-header">
+                        <span class="output-label">Y Coords</span>
+                        <div class="copy-actions">
+                            <button class="copy-btn icon-only" id="copy-y-data" title="Copy Array"><span
+                                    class="material-symbols-outlined">data_array</span></button>
+                            <button class="copy-btn icon-only" id="copy-y-full" title="Copy Full"><span
+                                    class="material-symbols-outlined">content_copy</span></button>
+                        </div>
+                    </div>
+                    <textarea id="y-output" readonly onclick="this.select()"></textarea>
+                </div>
+            </div>
+
+            <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid var(--color-border);">
+                <button id="reset-storage-btn" class="danger" style="width: 100%;">
+                    <span class="material-symbols-outlined">restart_alt</span>
+                    Reset App & Clear Data
+                </button>
+            </div>
+
+            <div style="height: 24px;"></div> <!-- Spacer -->
+        </aside>
+
+        <!-- Canvas Area -->
+        <main class="canvas-wrapper" id="canvas-wrapper">
+            <div id="canvas-placeholder" style="color: var(--color-text-muted); font-size: 0.9rem;">
+                Set size and click Update Canvas
+            </div>
+
+            <div id="desktop-hint"
+                style="position: absolute; bottom: 12px; left: 16px; font-size: 0.75rem; color: var(--color-text-muted); opacity: 0.7; pointer-events: none;">
+                <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 14px;">mouse</span>
+                Scroll to Zoom • Ctrl+Drag to Pan
+            </div>
+
+            <!-- Drawing aids -->
+            <div id="brush-helper"></div>
+            <div id="brush-point"></div>
+            <div id="mouse-target"></div>
+
+            <!-- Reset Zoom Button -->
+            <button id="reset-view-btn" title="Reset View" style="display: none;">
+                <span class="material-symbols-outlined">center_focus_strong</span>
+            </button>
+        </main>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+
+</html>

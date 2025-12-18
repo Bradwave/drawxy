@@ -1,0 +1,486 @@
+:root {
+    /* Motus Palette */
+    --color-bg: #ffffff;
+    --color-text-main: #1a1a1a;
+    --color-text-muted: #555555;
+    --color-accent: #1484e6;
+    --color-accent-dark: #0f6cb8;
+    --color-bg-track: #f7f9fb;
+    --color-border: #e0e0e0;
+    --font-mono: 'Space Mono', monospace;
+    --radius-md: 12px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+::selection {
+    background: var(--color-accent);
+    color: #ffffff;
+}
+
+/* Minimal Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #e0e0e0;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #bdbdbd;
+}
+
+body {
+    font-family: var(--font-mono);
+    background-color: var(--color-bg);
+    color: var(--color-text-main);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.app-container {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    width: 100%;
+    height: 100%;
+}
+
+@media (max-width: 800px) {
+    .app-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 50vh;
+        /* split canvas / settings */
+    }
+
+    .sidebar {
+        border-right: none;
+        border-top: 1px solid var(--color-border);
+        order: 2;
+    }
+
+    .canvas-wrapper {
+        order: 1;
+    }
+}
+
+/* Sidebar */
+.sidebar {
+    background-color: #ffffff;
+    border-right: 1px solid var(--color-border);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    overflow-y: auto;
+    z-index: 10;
+    box-shadow: 4px 0 12px rgba(0, 0, 0, 0.02);
+}
+
+header h1 {
+    font-size: 1.25rem;
+    margin: 0 0 0.5rem 0;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+header p {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    margin: 0;
+    line-height: 1.4;
+}
+
+header a {
+    color: var(--color-accent);
+    text-decoration: none;
+}
+
+/* Section Headings */
+.section-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--color-text-muted);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+    font-weight: 700;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.control-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.control-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.control-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Tighter inputs row */
+.inputs-compact {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Inputs & Sliders */
+input[type="number"] {
+    padding: 6px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    width: 70px;
+    font-size: 0.85rem;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+input[type="number"]:focus {
+    border-color: var(--color-accent);
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--color-border);
+    border-radius: 2px;
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+/* Motus-style Toggle Switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 42px;
+    height: 24px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .3s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+input:checked+.slider {
+    background-color: var(--color-accent);
+}
+
+input:checked+.slider:before {
+    transform: translateX(18px);
+}
+
+button {
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-main);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+}
+
+button:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    background-color: #f0f7ff;
+}
+
+button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+button.primary {
+    background-color: var(--color-accent);
+    color: white;
+    border: none;
+}
+
+button.primary:hover {
+    background-color: var(--color-accent-dark);
+}
+
+/* Removed button.danger:hover to keep it blue */
+
+button.icon-only {
+    padding: 6px;
+}
+
+/* Tool Toggle */
+.tool-toggle {
+    display: flex;
+    background: var(--color-bg-track);
+    padding: 4px;
+    border-radius: var(--radius-md);
+    gap: 4px;
+}
+
+.tool-option {
+    flex: 1;
+    padding: 8px;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.tool-option.active {
+    background: white;
+    color: var(--color-accent);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Output Area */
+.output-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.output-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.output-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+}
+
+.copy-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.copy-btn {
+    height: 24px;
+    padding: 0 8px;
+    font-size: 0.7rem;
+}
+
+.copy-btn .material-symbols-outlined {
+    font-size: 14px;
+}
+
+textarea {
+    width: 100%;
+    height: 70px;
+    padding: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    background-color: var(--color-bg-track);
+    color: var(--color-text-muted);
+    line-height: 1.4;
+    resize: vertical;
+}
+
+textarea:focus {
+    outline: 1px solid var(--color-accent);
+    background-color: white;
+}
+
+/* Canvas Area */
+.canvas-wrapper {
+    background-color: var(--color-bg-track);
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    /* Hide overflow for pan/zoom */
+    touch-action: none;
+    /* Prevent browser handling */
+
+    /* Dots Pattern */
+    background-image:
+        radial-gradient(var(--color-border) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+canvas {
+    /* Canvas is now a viewport, transparent background */
+    background-color: transparent;
+    /* No shadow on canvas element itself, we draw "paper" with shadow */
+    box-shadow: none;
+    cursor: crosshair;
+    display: block;
+    touch-action: none;
+}
+
+/* Grid Overlay on Canvas - REMOVED CSS GRID, Drawn in Canvas */
+/* canvas.show-grid {} */
+
+.canvas-wrapper.mode-select canvas {
+    cursor: default;
+}
+
+#reset-view-btn {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 1px solid var(--color-border);
+    z-index: 200;
+    color: var(--color-text-muted);
+    transition: all 0.2s;
+}
+
+#reset-view-btn:hover {
+    color: var(--color-accent);
+    transform: scale(1.1);
+}
+
+/* Helpers */
+/* Canvas is now fullscreen in wrapper, but we still need brush visuals to act correctly */
+/* They are updated in js */
+#brush-helper {
+    position: absolute;
+    pointer-events: none;
+    border: 2px solid rgba(20, 132, 230, 0.8);
+    background-color: rgba(20, 132, 230, 0.1);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+    z-index: 10000000;
+    /* High Z-index */
+    transition: width 0.1s, height 0.1s, opacity 0.2s;
+    ;
+}
+
+#desktop-hint {
+    transition: opacity 1s ease-in-out;
+}
+
+#brush-point {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background-color: var(--color-accent);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    display: none;
+    z-index: 101;
+}
+
+#mouse-target {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border: 2px solid rgba(0, 0, 0, 0.4);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    display: none;
+    z-index: 102;
+}
+
+/* Only show on devices with fine pointer (mouse) */
+@media (pointer: coarse) {
+    #desktop-hint {
+        display: none;
+    }
+}
