@@ -29,177 +29,269 @@
             </header>
 
             <!-- GROUP 1: CANVAS SETTINGS -->
-            <div class="section-title">Canvas Settings</div>
-            <div class="control-group">
-                <div class="control-row">
-                    <span class="control-label">Size</span>
-                    <div class="inputs-compact">
-                        <input type="number" id="width-input" value="400" title="Width">
-                        <span style="color: var(--color-text-muted)">x</span>
-                        <input type="number" id="height-input" value="600" title="Height">
-                    </div>
-                </div>
-
-                <div class="control-row">
-                    <span class="control-label">Grid</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="grid-check">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-
-                <div class="control-row">
-                    <span class="control-label">Cartesian Axis</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="cartesian-check">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-
-                <button id="create-btn" class="primary" style="width: 100%; margin-top: 4px;">
-                    <span class="material-symbols-outlined">crop_free</span>
-                    Update Canvas
-                </button>
+            <div class="section-header-collapsible">
+                <div class="section-title" style="border:none; margin:0; padding:0;">Canvas Settings</div>
+                <span class="material-symbols-outlined dropdown-icon">expand_more</span>
             </div>
-
+            <div class="collapsible-content">
+                <div class="control-group">
+                    <div class="control-row">
+                        <span class="control-label">Size</span>
+                        <div class="inputs-compact">
+                            <input type="number" id="width-input" value="400" title="Width">
+                            <span style="color: var(--color-text-muted)">x</span>
+                            <input type="number" id="height-input" value="600" title="Height">
+                        </div>
+                    </div>
+    
+                    <div class="control-row">
+                        <span class="control-label">Grid</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="grid-check">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+    
+                    <div class="control-row">
+                        <span class="control-label">Cartesian axis</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="cartesian-check">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+    
+                    <button id="create-btn" class="primary" style="width: 100%; margin-top: 4px;">
+                        <span class="material-symbols-outlined">crop_free</span>
+                        Update Canvas
+                    </button>
+                </div>
+            </div>
 
             <!-- GROUP 2: BRUSH SETTINGS -->
-            <div class="section-title" style="margin-top: 12px;">Brush & Mode</div>
-            <div class="control-group">
-                <div class="tool-toggle">
-                    <div class="tool-option active" id="mode-draw" onclick="setMode('draw')">
-                        <span class="material-symbols-outlined" style="font-size: 18px;">draw</span> DRAW
+            <div class="section-header-collapsible">
+                <div class="section-title" style="border:none; margin:0; padding:0;">Brush & Mode</div>
+                <span class="material-symbols-outlined dropdown-icon">expand_more</span>
+            </div>
+            <div class="collapsible-content">
+                <div class="control-group">
+                    <div class="tool-toggle">
+                        <div class="tool-option active" id="mode-draw" onclick="setMode('draw')">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">draw</span> DRAW
+                        </div>
+                        <div class="tool-option" id="mode-select" onclick="setMode('select')">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">near_me</span> SELECT
+                        </div>
+                        <div class="tool-option" id="mode-erase" onclick="setMode('erase')">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">ink_eraser</span> ERASE
+                        </div>
                     </div>
-                    <div class="tool-option" id="mode-select" onclick="setMode('select')">
-                        <span class="material-symbols-outlined" style="font-size: 18px;">near_me</span> SELECT
+    
+                    <div class="control-item">
+                        <div class="control-label">Lazy radius: <span id="radius-val">10</span></div>
+                        <input type="range" id="radius-slider" min="0" max="100" value="10">
+                    </div>
+    
+                    <div class="control-item">
+                        <div class="control-label">Brush size: <span id="brush-size-val">3</span></div>
+                        <input type="range" id="brush-size-slider" min="1" max="20" step="1" value="3">
+                    </div>
+
+                    <div class="control-item">
+                        <div class="control-label">Eraser size: <span id="eraser-size-val">10</span></div>
+                        <input type="range" id="eraser-size-slider" min="5" max="50" step="1" value="10">
+                    </div>
+    
+                    <div class="control-item">
+                        <div class="control-label">Friction: <span id="friction-val">0.4</span></div>
+                        <input type="range" id="friction-slider" min="0.05" max="1" step="0.05" value="0.4">
+                    </div>
+    
+                    <div style="display: flex; gap: 8px; margin-top: 8px;">
+                        <button id="delete-btn" class="danger" disabled style="flex: 1;">
+                            <span class="material-symbols-outlined">delete</span>
+                            Delete Sel.
+                        </button>
+                        <button id="clear-btn" style="flex: 1;">
+                            <span class="material-symbols-outlined">delete_sweep</span>
+                            Clear All
+                        </button>
                     </div>
                 </div>
+            </div>
 
-                <div class="control-item">
-                    <div class="control-label">Lazy Radius: <span id="radius-val">10</span></div>
-                    <input type="range" id="radius-slider" min="0" max="100" value="10">
-                </div>
-
-                <div class="control-item">
-                    <div class="control-label">Brush Size: <span id="brush-size-val">3</span></div>
-                    <input type="range" id="brush-size-slider" min="1" max="20" step="1" value="3">
-                </div>
-
-                <div class="control-item">
-                    <div class="control-label">Friction: <span id="friction-val">0.4</span></div>
-                    <input type="range" id="friction-slider" min="0.05" max="1" step="0.05" value="0.4">
-                </div>
-
-                <div style="display: flex; gap: 8px; margin-top: 8px;">
-                    <button id="delete-btn" class="danger" disabled style="flex: 1;">
-                        <span class="material-symbols-outlined">delete</span>
-                        Delete Sel.
+            <!-- GROUP 3: REFERENCE IMAGES -->
+            <div class="section-header-collapsible">
+                <div class="section-title" style="border:none; margin:0; padding:0;">Reference Images</div>
+                <span class="material-symbols-outlined dropdown-icon">expand_more</span>
+            </div>
+            <div class="collapsible-content">
+                <div class="control-group">
+                    <input type="file" id="ref-image-input" accept="image/*" multiple style="display: none;">
+                    <button class="secondary" onclick="document.getElementById('ref-image-input').click()" style="width: 100%; margin-bottom: 8px;">
+                        <span class="material-symbols-outlined">add_photo_alternate</span> Add Image
                     </button>
-                    <button id="clear-btn" style="flex: 1;">
-                        <span class="material-symbols-outlined">delete_sweep</span>
-                        Clear All
+                    <div id="ref-images-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                </div>
+            </div>
+
+            <!-- GROUP 4: DFT ANALYSIS -->
+            <div class="section-header-collapsible">
+                <div class="section-title" style="border:none; margin:0; padding:0; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <span>DFT Analysis</span>
+                    <div style="display: flex; align-items: center; gap: 6px; margin-right: 10px;" onclick="event.stopPropagation()">
+                        <span style="font-size: 0.7rem; text-transform: none; font-weight: 400;">Decimals:</span>
+                        <input type="number" id="dft-decimals-input" value="2" min="0" max="10"
+                            style="width: 40px; padding: 2px 4px; font-size: 0.8rem;">
+                    </div>
+                </div>
+                <span class="material-symbols-outlined dropdown-icon">expand_more</span>
+            </div>
+            <div class="collapsible-content" style="display: none;">
+                <div class="control-group">
+                    <div class="control-row">
+                        <span class="control-label">Fourier coefficients (N)</span>
+                        <input type="number" id="dft-n-input" value="10" min="1" step="1" title="Order">
+                    </div>
+                    <input type="range" id="dft-n-slider" min="1" max="100" step="1" value="10">
+    
+                    <p style="font-size: 0.7rem; color: var(--color-text-muted); margin: 8px 0 0 0;">
+                        Order: 0, 1, -1, 2, -2 ...
+                    </p>
+    
+                    <!-- DFT Outputs -->
+                    <div class="output-group">
+                        <div class="output-header">
+                            <span class="output-label">Angular velocity (v)</span>
+                            <div class="copy-actions">
+                                <button class="copy-btn icon-only" id="copy-n-data" title="Copy Array"><span
+                                        class="material-symbols-outlined">data_array</span></button>
+                                <button class="copy-btn icon-only" id="copy-n-full" title="Copy Full"><span
+                                        class="material-symbols-outlined">content_copy</span></button>
+                            </div>
+                        </div>
+                        <textarea id="n-output" readonly></textarea>
+                    </div>
+                    <div class="output-group">
+                        <div class="output-header">
+                            <span class="output-label">Magnitude (R)</span>
+                            <div class="copy-actions">
+                                <button class="copy-btn icon-only" id="copy-r-data" title="Copy Array"><span
+                                        class="material-symbols-outlined">data_array</span></button>
+                                <button class="copy-btn icon-only" id="copy-r-full" title="Copy Full"><span
+                                        class="material-symbols-outlined">content_copy</span></button>
+                            </div>
+                        </div>
+                        <textarea id="r-output" readonly></textarea>
+                    </div>
+    
+                    <div class="output-group">
+                        <div class="output-header">
+                            <span class="output-label">Phase (phi)</span>
+                            <div class="copy-actions">
+                                <button class="copy-btn icon-only" id="copy-phi-data" title="Copy Array"><span
+                                        class="material-symbols-outlined">data_array</span></button>
+                                <button class="copy-btn icon-only" id="copy-phi-full" title="Copy Full"><span
+                                        class="material-symbols-outlined">content_copy</span></button>
+                            </div>
+                        </div>
+                        <textarea id="phi-output" readonly></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GROUP 5: COORDINATES -->
+            <div class="section-header-collapsible">
+                <div class="section-title" style="border:none; margin:0; padding:0; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <span>Coordinates</span>
+                     <div style="display: flex; align-items: center; gap: 6px; margin-right: 10px;" onclick="event.stopPropagation()">
+                        <span style="font-size: 0.7rem; text-transform: none; font-weight: 400;">Decimals:</span>
+                        <input type="number" id="coord-decimals-input" value="2" min="0" max="10"
+                            style="width: 40px; padding: 2px 4px; font-size: 0.8rem;">
+                    </div>
+                </div>
+                <span class="material-symbols-outlined dropdown-icon">expand_more</span>
+            </div>
+            <div class="collapsible-content" style="display: none;">
+                <div class="control-group">
+                    <div class="output-group">
+                        <div class="output-header">
+                            <span class="output-label">X Coords</span>
+                            <div class="copy-actions">
+                                <button class="copy-btn icon-only" id="copy-x-data" title="Copy Array"><span
+                                        class="material-symbols-outlined">data_array</span></button>
+                                <button class="copy-btn icon-only" id="copy-x-full" title="Copy Full"><span
+                                        class="material-symbols-outlined">content_copy</span></button>
+                            </div>
+                        </div>
+                        <div class="coord-container">
+                             <div class="coord-prefix">const x = </div>
+                             <textarea id="x-output" oninput="validateCoordInput('x')" class="coord-textarea"></textarea>
+                             <div class="coord-suffix">;</div>
+                        </div>
+                    </div>
+    
+                    <div class="output-group">
+                        <div class="output-header">
+                            <span class="output-label">Y Coords</span>
+                            <div class="copy-actions">
+                                <button class="copy-btn icon-only" id="copy-y-data" title="Copy Array"><span
+                                        class="material-symbols-outlined">data_array</span></button>
+                                <button class="copy-btn icon-only" id="copy-y-full" title="Copy Full"><span
+                                        class="material-symbols-outlined">content_copy</span></button>
+                            </div>
+                        </div>
+                         <div class="coord-container">
+                             <div class="coord-prefix">const y = </div>
+                             <textarea id="y-output" oninput="validateCoordInput('y')" class="coord-textarea"></textarea>
+                             <div class="coord-suffix">;</div>
+                        </div>
+                    </div>
+                    
+                    <div id="coord-warning" style="color: var(--color-accent); font-size: 0.8rem; margin-top: 8px; display: none; background: rgba(20, 132, 230, 0.1); padding: 8px; border-radius: 4px; border: 1px solid rgba(20, 132, 230, 0.2);">
+                        <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 16px; margin-right: 4px;">warning</span>
+                        Invalid coordinates format.
+                    </div>
+                </div>
+            </div>
+
+            <!-- GROUP 6: DATA / EXPORT -->
+            <div class="section-header-collapsible">
+                <div class="section-title" style="border:none; margin:0; padding:0;">Data / Export</div>
+                <span class="material-symbols-outlined dropdown-icon">expand_more</span>
+            </div>
+            <div class="collapsible-content" style="display: none;">
+                <div class="control-group">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <span class="control-label" style="margin: 0;">Export Selected Only</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="export-selected-only">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <button class="secondary" onclick="exportData()" style="width: 100%; margin-bottom: 8px;">
+                        <span class="material-symbols-outlined">download</span> Export JSON
                     </button>
-                </div>
-            </div>
-
-            <!-- GROUP 3: DFT ANALYSIS -->
-            <div class="section-title"
-                style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
-                <span>DFT Analysis</span>
-                <div style="display: flex; align-items: center; gap: 6px;">
-                    <span style="font-size: 0.7rem; text-transform: none; font-weight: 400;">Decimals:</span>
-                    <input type="number" id="dft-decimals-input" value="2" min="0" max="10"
-                        style="width: 40px; padding: 2px 4px; font-size: 0.8rem;">
-                </div>
-            </div>
-            <div class="control-group">
-                <div class="control-row">
-                    <span class="control-label">Fourier coefficients (N)</span>
-                    <input type="number" id="dft-n-input" value="10" min="1" step="1" title="Order">
-                </div>
-                <input type="range" id="dft-n-slider" min="1" max="100" step="1" value="10">
-
-                <p style="font-size: 0.7rem; color: var(--color-text-muted); margin: 8px 0 0 0;">
-                    Order: 0, 1, -1, 2, -2 ...
-                </p>
-
-                <!-- DFT Outputs -->
-                <div class="output-group">
-                    <div class="output-header">
-                        <span class="output-label">Angular velocity (v)</span>
-                        <div class="copy-actions">
-                            <button class="copy-btn icon-only" id="copy-n-data" title="Copy Array"><span
-                                    class="material-symbols-outlined">data_array</span></button>
-                            <button class="copy-btn icon-only" id="copy-n-full" title="Copy Full"><span
-                                    class="material-symbols-outlined">content_copy</span></button>
-                        </div>
+                    <input type="file" id="import-json-input" accept=".json" style="display: none;" onchange="importData(this)">
+                    <button class="secondary" onclick="document.getElementById('import-json-input').click()" style="width: 100%; margin-bottom: 12px;">
+                        <span class="material-symbols-outlined">upload</span> Import JSON
+                    </button>
+                    
+                    <div style="border-top: 1px solid #eee; margin: 8px 0;"></div>
+                    <div class="control-label">Import Coordinates</div>
+                    
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                        <div style="font-size: 0.8rem; color: var(--color-text-muted); min-width: 20px; font-weight: bold;">X:</div>
+                         <input type="text" id="import-x" placeholder="[1, 2, ...]" oninput="validateCoordImport()" style="font-family: var(--font-mono); flex: 1; padding: 4px; font-size: 0.8rem; border: 1px solid var(--color-border); border-radius: 4px;">
                     </div>
-                    <textarea id="n-output" readonly></textarea>
-                </div>
-                <div class="output-group">
-                    <div class="output-header">
-                        <span class="output-label">Magnitude (R)</span>
-                        <div class="copy-actions">
-                            <button class="copy-btn icon-only" id="copy-r-data" title="Copy Array"><span
-                                    class="material-symbols-outlined">data_array</span></button>
-                            <button class="copy-btn icon-only" id="copy-r-full" title="Copy Full"><span
-                                    class="material-symbols-outlined">content_copy</span></button>
-                        </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                         <div style="font-size: 0.8rem; color: var(--color-text-muted); min-width: 20px; font-weight: bold;">Y:</div>
+                         <input type="text" id="import-y" placeholder="[1, 2, ...]" oninput="validateCoordImport()" style="font-family: var(--font-mono); flex: 1; padding: 4px; font-size: 0.8rem; border: 1px solid var(--color-border); border-radius: 4px;">
                     </div>
-                    <textarea id="r-output" readonly></textarea>
-                </div>
-
-                <div class="output-group">
-                    <div class="output-header">
-                        <span class="output-label">Phase (phi)</span>
-                        <div class="copy-actions">
-                            <button class="copy-btn icon-only" id="copy-phi-data" title="Copy Array"><span
-                                    class="material-symbols-outlined">data_array</span></button>
-                            <button class="copy-btn icon-only" id="copy-phi-full" title="Copy Full"><span
-                                    class="material-symbols-outlined">content_copy</span></button>
-                        </div>
-                    </div>
-                    <textarea id="phi-output" readonly></textarea>
-                </div>
-            </div>
-
-
-            <!-- GROUP 4: COORDINATES -->
-            <div class="section-title"
-                style="margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
-                <span>Coordinates</span>
-                <div style="display: flex; align-items: center; gap: 6px;">
-                    <span style="font-size: 0.7rem; text-transform: none; font-weight: 400;">Decimals:</span>
-                    <input type="number" id="coord-decimals-input" value="2" min="0" max="10"
-                        style="width: 40px; padding: 2px 4px; font-size: 0.8rem;">
-                </div>
-            </div>
-            <div class="control-group">
-
-                <div class="output-group">
-                    <div class="output-header">
-                        <span class="output-label">X Coords</span>
-                        <div class="copy-actions">
-                            <button class="copy-btn icon-only" id="copy-x-data" title="Copy Array"><span
-                                    class="material-symbols-outlined">data_array</span></button>
-                            <button class="copy-btn icon-only" id="copy-x-full" title="Copy Full"><span
-                                    class="material-symbols-outlined">content_copy</span></button>
-                        </div>
-                    </div>
-                    <textarea id="x-output" readonly onclick="this.select()"></textarea>
-                </div>
-
-                <div class="output-group">
-                    <div class="output-header">
-                        <span class="output-label">Y Coords</span>
-                        <div class="copy-actions">
-                            <button class="copy-btn icon-only" id="copy-y-data" title="Copy Array"><span
-                                    class="material-symbols-outlined">data_array</span></button>
-                            <button class="copy-btn icon-only" id="copy-y-full" title="Copy Full"><span
-                                    class="material-symbols-outlined">content_copy</span></button>
-                        </div>
-                    </div>
-                    <textarea id="y-output" readonly onclick="this.select()"></textarea>
+                    <button id="add-coords-btn" class="primary" style="width: 100%;" disabled onclick="addDrawingFromCoords()">
+                        <span class="material-symbols-outlined">add</span> Add Drawing
+                    </button>
                 </div>
             </div>
 
@@ -215,12 +307,11 @@
 
         <!-- Canvas Area -->
         <main class="canvas-wrapper" id="canvas-wrapper">
-            <div id="canvas-placeholder" style="color: var(--color-text-muted); font-size: 0.9rem;">
+            <div id="canvas-placeholder">
                 Set size and click Update Canvas
             </div>
 
-            <div id="desktop-hint"
-                style="position: absolute; bottom: 12px; left: 16px; font-size: 0.75rem; color: var(--color-text-muted); opacity: 0.7; pointer-events: none;">
+            <div id="desktop-hint">
                 <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 14px;">mouse</span>
                 Scroll to Zoom • Ctrl+Drag to Pan
             </div>

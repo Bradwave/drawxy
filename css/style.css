@@ -160,7 +160,7 @@ input[type="number"] {
     padding: 6px;
     border: 1px solid var(--color-border);
     border-radius: 6px;
-    font-family: var(--font-mono);
+    font-family: 'Space Mono', monospace;
     width: 70px;
     font-size: 0.85rem;
     text-align: center;
@@ -478,9 +478,119 @@ canvas {
     z-index: 102;
 }
 
+#desktop-hint {
+    position: absolute;
+    bottom: 12px;
+    left: 16px;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    opacity: 0.7;
+    pointer-events: none;
+    transition: opacity 1s ease-in-out;
+}
+
+#canvas-placeholder {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+}
+
 /* Only show on devices with fine pointer (mouse) */
 @media (pointer: coarse) {
     #desktop-hint {
         display: none;
     }
 }
+
+/* Collapsible Sections */
+.section-header-collapsible {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+    transition: color 0.2s;
+}
+
+.section-header-collapsible:hover .section-title {
+    color: var(--color-accent);
+}
+
+.dropdown-icon {
+    font-size: 20px;
+    color: var(--color-text-muted);
+    transition: transform 0.3s;
+}
+
+.ref-image-item {
+    transition: box-shadow 0.2s;
+}
+
+.ref-image-item:hover {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Coord Styles */
+.coord-container {
+    display: flex;
+    flex-direction: column;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-bg-track);
+    overflow: hidden;
+    margin-top: 4px;
+}
+
+.coord-prefix {
+    background: var(--color-bg);
+    padding: 6px 8px;
+    border-bottom: 1px solid #eee;
+    color: #555;
+    font-weight: 600;
+}
+
+.coord-textarea {
+    border: none;
+    padding: 8px;
+    outline: none;
+    font-family: 'Space Mono', monospace;
+    resize: vertical;
+    min-height: 60px;
+    width: 100%;
+    box-sizing: border-box;
+    color: var(--color-text-main);
+    display: block;
+    background: var(--color-bg-track);
+}
+
+.coord-suffix {
+    background: var(--color-bg);
+    padding: 6px 8px;
+    border-top: 1px solid #eee;
+    color: #888;
+}
+
+/* Coordinate Inputs Refinement */
+.coord-textarea {
+    border-radius: 0 !important;
+}
+
+.coord-textarea:focus {
+    outline: 2px solid var(--color-accent) !important;
+    z-index: 5;
+    position: relative;
+}
+
+textarea:disabled {
+    background-color: #fafafa;
+    color: #bbb;
+    cursor: not-allowed;
+}
+
+/* Allow outline to be visible if possible, though overflow hidden on container might clip it. 
+   We'll set overflow to visible on the container if needed, but let's try this first. 
+   Actually, let's override the container overflow if strictly needed, but let's stick to the request.
+*/
