@@ -227,25 +227,14 @@ function setMode(mode) {
         brush.y = pointer.y;
     }
 
-    if (mode === 'draw') {
-        // selectedIndex = -1; // Keep selection for extending
-        updateUIState();
-        redraw();
-        updateBrushVisuals();
-    }
-    
     if (mode === 'erase') {
         selectedIndex = -1;
-        updateUIState();
-        redraw();
-        updateBrushVisuals();
     }
 
-    if (mode === 'select') {
-        helper.style.display = 'none';
-        brushPoint.style.display = 'none';
-        mouseTarget.style.display = 'none';
-    }
+    // Always update UI and visuals
+    updateUIState();
+    redraw();
+    updateBrushVisuals();
 }
 
 // Load State from LocalStorage
@@ -403,34 +392,8 @@ function initCanvas() {
 
     setMode(state.mode);
 
-    // Use Pointer events for drawing (supports mouse and touch)
-    canvas.addEventListener('pointerdown', e => {
-        // Prevent scrolling on touch devices
-        e.preventDefault();
-        handleMouseDown(e);
-    });
-    window.addEventListener('pointermove', e => {
-        e.preventDefault();
-        handleMove(e);
-    });
-    window.addEventListener('pointerup', e => {
-        e.preventDefault();
-        handleMouseUp();
-    });
-
-    wrapper.addEventListener('wheel', handleWheel, { passive: false });
-    wrapper.addEventListener('touchstart', handleTouchStart, { passive: false });
-    wrapper.addEventListener('touchmove', handleTouchMove, { passive: false });
-    wrapper.addEventListener('touchend', handleTouchEnd);
-
-    canvas.addEventListener('mouseenter', () => {
-        if (state.mode === 'draw' || state.mode === 'erase') {
-            helper.style.display = 'block';
-            brushPoint.style.display = 'block';
-            mouseTarget.style.display = 'block';
-            updateBrushVisuals();
-        }
-    });
+    // Attach listeners to the NEW canvas element
+    setupCanvasListeners(canvas);
 
     // Don't reset curves here if loaded
     // But 'Create New'/Update Canvas logic implies reset?
@@ -448,8 +411,50 @@ function initCanvas() {
     redraw();
     updateHelperSize();
     updateViewTransform();
-    requestAnimationFrame(loop);
+    // Ensure loop is running (idempotent?)
+    // requestAnimationFrame(loop); // loop calls itself.
+    // We only need to start it once. It's started at bottom of file?
+    // Let's check.
 }
+
+function setupCanvasListeners(cvs) {
+    // Use Pointer events for drawing (supports mouse and touch)
+    cvs.addEventListener('pointerdown', e => {
+        // Prevent scrolling on touch devices
+        e.preventDefault();
+        handleMouseDown(e);
+    });
+    
+    cvs.addEventListener('mouseenter', () => {
+        if (state.mode === 'draw' || state.mode === 'erase') {
+             if (helper) helper.style.display = 'block';
+             if (brushPoint) brushPoint.style.display = 'block';
+             if (mouseTarget) mouseTarget.style.display = 'block';
+             updateBrushVisuals();
+        }
+    });
+}
+
+function setupGlobalListeners() {
+    window.addEventListener('pointermove', e => {
+        e.preventDefault();
+        handleMove(e);
+    });
+    window.addEventListener('pointerup', e => {
+        e.preventDefault();
+        handleMouseUp();
+    });
+
+    wrapper.addEventListener('wheel', handleWheel, { passive: false });
+    wrapper.addEventListener('touchstart', handleTouchStart, { passive: false });
+    wrapper.addEventListener('touchmove', handleTouchMove, { passive: false });
+    wrapper.addEventListener('touchend', handleTouchEnd);
+}
+// Call immediately
+setupGlobalListeners();
+requestAnimationFrame(loop); // Start loop once
+
+
 
 // -- Pan & Zoom Logic --
 function updateViewTransform() {
@@ -629,6 +634,7 @@ function updateUIState() {
 function getCanvasCoords(e) {
     // Map Mouse Client Coords -> Logical Canvas Coords
     // Logic: (Client - CanvasOffset - Pan) / Scale
+    if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
 
     // Client relative to DOM element
@@ -646,21 +652,23 @@ function handleMove(e) {
     const pos = getCanvasCoords(e);
     
     // Cursor updates
-    if (state.mode === 'select' && !isDragging && !isDraggingImage && !resizeHandle && !resizeCurveMode && !isCtrlPanning) {
-        let cursor = 'default';
-        const imgHit = hitTestImage(pos.x, pos.y);
-        if (imgHit) {
-            cursor = imgHit.type === 'resize' ? 'nwse-resize' : 'move';
-        } else if (hitTestCurveHandle(pos.x, pos.y)) {
-             cursor = 'nwse-resize';
-        } else if (findHitCurve(pos.x, pos.y) !== -1) {
-             cursor = 'move';
+    if (canvas) {
+        if (state.mode === 'select' && !isDragging && !isDraggingImage && !resizeHandle && !resizeCurveMode && !isCtrlPanning) {
+            let cursor = 'default';
+            const imgHit = hitTestImage(pos.x, pos.y);
+            if (imgHit) {
+                cursor = imgHit.type === 'resize' ? 'nwse-resize' : 'move';
+            } else if (hitTestCurveHandle(pos.x, pos.y)) {
+                 cursor = 'nwse-resize';
+            } else if (findHitCurve(pos.x, pos.y) !== -1) {
+                 cursor = 'move';
+            }
+            canvas.style.cursor = cursor;
+        } else if (isCtrlPanning) {
+            canvas.style.cursor = 'grabbing';
+        } else {
+            canvas.style.cursor = 'default';
         }
-        canvas.style.cursor = cursor;
-    } else if (isCtrlPanning) {
-        canvas.style.cursor = 'grabbing';
-    } else {
-        canvas.style.cursor = 'default';
     }
 
     // Desktop Pan
@@ -815,87 +823,79 @@ function handleMove(e) {
     }
 
     if (state.mode === 'erase') {
-        // Eraser Logic
-        // Scan all curves (or maybe just check local area for performance if many curves)
-        // Check terminal points
-        eraserFull = false;
+        handleEraser(pos);
+    }
+}
 
-        const eSize = state.eraserSize || 10;
-        const r = eSize / viewState.scale;
-        
-        // We act on all curves? Yes.
-        // If isDrawing (mouse down), we delete.
-        
-        // Find candidates
-        let hoverAny = false;
-        
-        // Loop backwards to remove safely? Or just flag modification?
-        // Since we modify arrays in place, we can loop.
-        
-        for (let i = curves.length - 1; i >= 0; i--) {
-            const pts = curves[i].points;
-            if (pts.length === 0) continue;
-            
-            const start = pts[0];
-            const end = pts[pts.length - 1];
-            
-            // Should be in logical coords
-            const dStart = Math.hypot(pos.x - start.x, pos.y - start.y);
-            const dEnd = Math.hypot(pos.x - end.x, pos.y - end.y);
-            
-            const hitStart = dStart <= r;
-            const hitEnd = dEnd <= r;
-            
-            if (hitStart || hitEnd) {
-                hoverAny = true;
-                if (state.isDrawing) {
-                    if (hitStart) curves[i].points.shift();
-                    // If we removed start, we must re-check if we should remove new start?
-                    // The "eating" effect requires continuous removal.
-                    // Since this is handleMove, it fires often. removing one point per event might be enough?
-                    // BUT: points are dense.
-                    // Let's remove ALL points in radius? 
-                    // "only terminal points". 
-                    // So we remove the terminal. Now the next one is terminal.
-                    // If that next one is ALSO in radius, do we remove it same frame?
-                    // Yes, to make it smooth.
-                    
-                    // While loop
-                    // Remove from start
-                    while(curves[i].points.length > 0) {
-                        const s = curves[i].points[0];
-                        if (Math.hypot(pos.x - s.x, pos.y - s.y) <= r) {
-                            curves[i].points.shift();
-                        } else {
-                            break; 
-                        }
-                    }
-                    
-                    // Remove from end
-                    while(curves[i].points.length > 0) {
-                        const e = curves[i].points[curves[i].points.length - 1];
-                         if (Math.hypot(pos.x - e.x, pos.y - e.y) <= r) {
-                            curves[i].points.pop();
-                        } else {
-                            break; 
-                        }
-                    }
+function handleEraser(pos) {
+    // Eraser Logic
+    brush.x = pos.x;
+    brush.y = pos.y;
 
-                    // If empty, remove curve
-                    if (curves[i].points.length < 2) {
-                        curves.splice(i, 1);
-                        selectedIndex = -1; // Deselect if we deleted selection
-                        updateUIState();
+    // Scan all curves (or maybe just check local area for performance if many curves)
+    // Check terminal points
+    eraserFull = false;
+
+    const eSize = state.eraserSize || 10;
+    const r = eSize / viewState.scale;
+    
+    // Find candidates
+    let hoverAny = false;
+    
+    // Loop backwards to remove safely
+    for (let i = curves.length - 1; i >= 0; i--) {
+        const pts = curves[i].points;
+        if (pts.length === 0) continue;
+        
+        const start = pts[0];
+        const end = pts[pts.length - 1];
+        
+        // Should be in logical coords
+        const dStart = Math.hypot(pos.x - start.x, pos.y - start.y);
+        const dEnd = Math.hypot(pos.x - end.x, pos.y - end.y);
+        
+        const hitStart = dStart <= r;
+        const hitEnd = dEnd <= r;
+        
+        if (hitStart || hitEnd) {
+            hoverAny = true;
+            if (state.isDrawing) {
+                if (hitStart) curves[i].points.shift();
+                
+                // While loop (remove from start)
+                while(curves[i].points.length > 0) {
+                    const s = curves[i].points[0];
+                    if (Math.hypot(pos.x - s.x, pos.y - s.y) <= r) {
+                        curves[i].points.shift();
+                    } else {
+                        break; 
                     }
-                    redraw();
-                    saveState(); // Heavy saving? Maybe debounce?
                 }
+                
+                // Remove from end
+                while(curves[i].points.length > 0) {
+                    const e = curves[i].points[curves[i].points.length - 1];
+                        if (Math.hypot(pos.x - e.x, pos.y - e.y) <= r) {
+                        curves[i].points.pop();
+                    } else {
+                        break; 
+                    }
+                }
+
+                // If empty, remove curve
+                if (curves[i].points.length < 2) {
+                    curves.splice(i, 1);
+                    selectedIndex = -1; // Deselect if we deleted selection
+                    updateUIState();
+                }
+                redraw();
+                saveState(); // Heavy saving? Maybe debounce?
             }
         }
-        
-        eraserFull = hoverAny;
-        updateBrushVisuals();
     }
+    
+    eraserFull = hoverAny;
+    updateBrushVisuals();
 }
 
 function handleMouseDown(e) {
@@ -1106,6 +1106,7 @@ function updateBrushVisuals() {
         const visualRadius = radius * viewState.scale;
 
         if (brushPoint) {
+            brushPoint.style.display = state.mode === 'erase' ? 'none' : 'block';
             brushPoint.style.left = cx + 'px';
             brushPoint.style.top = cy + 'px';
         }
@@ -1118,8 +1119,8 @@ function updateBrushVisuals() {
 
             if (state.mode === 'erase') {
                 // Eraser Style
-                helper.style.backgroundColor = eraserFull ? 'rgba(20, 132, 230, 0.4)' : 'rgba(20, 132, 230, 0.25)';
-                helper.style.borderColor = eraserFull ? 'rgba(20, 132, 230, 1.0)' : 'rgba(20, 132, 230, 0.8)';
+                helper.style.backgroundColor = eraserFull ? 'rgba(20, 132, 230, 0.4)' : 'rgba(20, 132, 230, 0.1)';
+                helper.style.borderColor = eraserFull ? 'rgba(20, 132, 230, 1.0)' : 'rgba(20, 132, 230, 0.4)';
                 if (brushPoint) brushPoint.style.backgroundColor = eraserFull ? '#1484e6' : 'var(--color-accent)';
             } else {
                 // Draw Style
@@ -1274,28 +1275,50 @@ function redraw() {
 
     // Draw Endpoints and Dashed Connection (Any Mode, if selected)
     // Especially useful in Draw mode for snapping
-    if (selectedIndex !== -1 && curves[selectedIndex]) {
-        const pts = curves[selectedIndex].points;
+    
+    // Logic: Identify which curves to show endpoints for.
+    // If Select Mode or Draw Mode: Show for selectedIndex.
+    // If Eraser Mode: Show for ALL curves (to visualize what can be erased).
+    
+    const curvesToShow = [];
+    if (state.mode === 'erase') {
+        curves.forEach((c, i) => curvesToShow.push({ curve: c, selected: false }));
+    } else if (selectedIndex !== -1 && curves[selectedIndex]) {
+        curvesToShow.push({ curve: curves[selectedIndex], selected: true });
+    }
+
+    curvesToShow.forEach(item => {
+        const c = item.curve;
+        const pts = c.points;
         const s = viewState.scale;
         
         if (pts.length > 0) {
             const start = pts[0];
             const end = pts[pts.length - 1];
 
-            // Dashed Line
-            ctx.save();
-            ctx.beginPath();
-            ctx.setLineDash([5 / s, 5 / s]);
-            ctx.strokeStyle = '#1484e6'; // Accent
-            ctx.lineWidth = 1 / s;
-            ctx.moveTo(start.x, start.y);
-            ctx.lineTo(end.x, end.y);
-            ctx.stroke();
-            ctx.restore();
+            // Only draw dashed connection if selected? User asked for "white dots".
+            // Let's draw everything for consistency, or just dots? 
+            // "display the white dots for start/end points for each drawing"
+            // I'll draw the markers (Circle) which contains the white dot.
+            
+            if (item.selected) {
+                // Dashed Line (Only for selected)
+                ctx.save();
+                ctx.beginPath();
+                ctx.setLineDash([5 / s, 5 / s]);
+                ctx.strokeStyle = '#1484e6'; // Accent
+                ctx.lineWidth = 1 / s;
+                ctx.moveTo(start.x, start.y);
+                ctx.lineTo(end.x, end.y);
+                ctx.stroke();
+                ctx.restore();
+            }
 
             // Blue Markers (Start/End)
+            // For eraser, maybe red? or just blue to indicate "active points"
             const r = 4 / s;
-            ctx.fillStyle = '#1484e6';
+            // Start
+            ctx.fillStyle = state.mode === 'erase' ? 'black' : '#1484e6';
             
             // Start
             ctx.beginPath();
@@ -1307,13 +1330,8 @@ function redraw() {
             ctx.arc(end.x, end.y, r, 0, Math.PI * 2);
             ctx.fill();
 
-            // White Dots on top (Diameter 75% of brush width? No, User said drawing width? "drawing width" usually refers to stroke width?)
-            // "diameter 75% of the drawing width". 
-            // The drawing brushSize is stored in curve.brushSize.
-            // Let's use that.
-            const curveSize = curves[selectedIndex].brushSize || state.brushSize;
-            // Diameter = 0.75 * curveSize. Radius = 0.375 * curveSize.
-            // These are logical sizes.
+            // White Dots
+            const curveSize = c.brushSize || state.brushSize;
             const wR = (curveSize * 0.375); // Logical radius
             
             ctx.fillStyle = 'white';
@@ -1325,7 +1343,7 @@ function redraw() {
             ctx.arc(end.x, end.y, wR, 0, Math.PI * 2);
             ctx.fill();
         }
-    }
+    });
 
     ctx.restore(); // End Clip
 }
