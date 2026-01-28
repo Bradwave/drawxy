@@ -594,3 +594,140 @@ textarea:disabled {
    We'll set overflow to visible on the container if needed, but let's try this first. 
    Actually, let's override the container overflow if strictly needed, but let's stick to the request.
 */
+/* Desmos & Extra Controls */
+.control-row.spaced-top {
+    margin-top: 12px;
+    margin-bottom: 4px;
+}
+
+.control-row.spaced-small {
+    margin-top: 8px;
+}
+
+.help-text {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    margin: 4px 0 12px 0;
+}
+
+/* Refactored Utility Classes */
+.section-title.reset {
+    border: none;
+    margin: 0;
+    padding: 0;
+}
+
+.section-title.flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.dec-input-container {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-right: 10px;
+}
+
+.dec-label {
+    font-size: 0.7rem;
+    text-transform: none;
+    font-weight: 400;
+}
+
+.dec-input {
+    width: 40px;
+    padding: 2px 4px;
+    font-size: 0.8rem;
+}
+
+.warning-box {
+    color: var(--color-accent);
+    font-size: 0.8rem;
+    margin-top: 8px;
+    display: none;
+    background: rgba(20, 132, 230, 0.1);
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(20, 132, 230, 0.2);
+}
+
+.spacer-bottom {
+    height: 24px;
+}
+
+.w-100 { width: 100%; }
+.mt-4 { margin-top: 4px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-12 { margin-bottom: 12px; }
+.gap-8 { gap: 8px; }
+.flex-1 { flex: 1; }
+
+
+/* Export Section Refactor */
+.export-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+.no-margin { margin: 0; }
+.divider {
+    border-top: 1px solid #eee;
+    margin: 8px 0;
+}
+.import-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+.import-label {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    min-width: 20px;
+    font-weight: bold;
+}
+.import-input {
+    font-family: var(--font-mono);
+    flex: 1;
+    padding: 4px;
+    font-size: 0.8rem;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+}
+
+
+/* Refactor Round 2 */
+.input-separator {
+    color: var(--color-text-muted);
+}
+.tool-icon {
+    font-size: 18px;
+}
+.button-group {
+    display: flex; gap: 8px; margin-top: 8px;
+}
+.hidden { display: none; }
+.ref-list {
+    display: flex; flex-direction: column; gap: 8px;
+}
+.help-text-top {
+    font-size: 0.7rem; 
+    color: var(--color-text-muted); 
+    margin: 8px 0 0 0;
+}
+.warning-icon {
+    vertical-align: middle; font-size: 16px; margin-right: 4px;
+}
+.sidebar-footer {
+    margin-top: auto; 
+    padding-top: 20px; 
+    border-top: 1px solid var(--color-border);
+}
+.hint-icon {
+    vertical-align: middle; font-size: 14px;
+}
+

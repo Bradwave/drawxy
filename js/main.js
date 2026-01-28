@@ -13,8 +13,13 @@ let state = {
     cartesian: false,
     dftN: 10,
     dftDecimals: 2,
-    coordDecimals: 2
+    coordDecimals: 2,
+    desmosPoints: -1, // -1 means max/all
+    showApprox: false,
+    showFourier: false,
+    linkDn: false
 };
+let cachedFourierPath = null; // Cache for selected curve fourier approx
 
 let isDragging = false;
 let dragLastPos = { x: 0, y: 0 };
@@ -58,6 +63,11 @@ const dftNSlider = document.getElementById('dft-n-slider');
 const dftNInput = document.getElementById('dft-n-input');
 const dftDecimalsInput = document.getElementById('dft-decimals-input');
 const coordDecimalsInput = document.getElementById('coord-decimals-input');
+const desmosPointsSlider = document.getElementById('desmos-points-slider');
+const desmosPointsInput = document.getElementById('desmos-points-input');
+const showApproxCheck = document.getElementById('show-approx-check');
+const showFourierCheck = document.getElementById('show-fourier-check');
+const linkDnCheck = document.getElementById('link-dn-check');
 
 const radiusVal = document.getElementById('radius-val');
 const frictionVal = document.getElementById('friction-val');
@@ -103,6 +113,7 @@ gridCheck.onchange = (e) => {
         if (e.target.checked) canvas.classList.add('show-grid');
         else canvas.classList.remove('show-grid');
     }
+    redraw();
     saveState();
 };
 
@@ -144,6 +155,14 @@ dftNSlider.oninput = (e) => {
     let val = parseInt(e.target.value);
     state.dftN = val;
     dftNInput.value = val;
+    
+    if (state.linkDn) {
+        state.desmosPoints = val;
+        desmosPointsSlider.value = val;
+        desmosPointsInput.value = val;
+        updateOutputs();
+    }
+
     updateDFT();
     saveState();
 }
@@ -151,6 +170,14 @@ dftNInput.onchange = (e) => {
     let val = parseInt(e.target.value);
     state.dftN = val;
     dftNSlider.value = val;
+    
+    if (state.linkDn) {
+        state.desmosPoints = val;
+        desmosPointsSlider.value = val;
+        desmosPointsInput.value = val;
+        updateOutputs();
+    }
+    
     updateDFT();
     saveState();
 }
@@ -180,7 +207,72 @@ coordDecimalsInput.onchange = (e) => {
     state.coordDecimals = val;
     updateOutputs();
     saveState();
+    saveState();
 }
+
+// Desmos Points Slider
+desmosPointsInput.onchange = (e) => {
+    let val = parseInt(e.target.value);
+    state.desmosPoints = val;
+    desmosPointsSlider.value = val;
+    
+    if (state.linkDn) {
+        state.dftN = val;
+        dftNInput.value = val;
+        dftNSlider.value = val;
+        updateDFT();
+    }
+    
+    updateOutputs();
+    saveState();
+};
+desmosPointsSlider.oninput = (e) => {
+    let val = parseInt(e.target.value);
+    state.desmosPoints = val;
+    desmosPointsInput.value = val;
+    
+    if (state.linkDn) {
+        state.dftN = val;
+        dftNInput.value = val;
+        dftNSlider.value = val;
+        updateDFT();
+    }
+    
+    updateOutputs();
+};
+
+showApproxCheck.onchange = (e) => {
+    state.showApprox = e.target.checked;
+    redraw();
+    saveState();
+};
+
+showFourierCheck.onchange = (e) => {
+    state.showFourier = e.target.checked;
+    updateDFT();
+    redraw();
+    saveState();
+};
+
+linkDnCheck.onchange = (e) => {
+    state.linkDn = e.target.checked;
+    
+    // Logic on enable: sync one to another?
+    // Let's sync N to Desmos points, or vice versa?
+    // Usually user sets N then enables. Or user sets points.
+    // Let's not force change immediately, or maybe force N -> Desmos if N > 0?
+    // If I enable, and they differ, which one wins?
+    // Let's update Desmos Points to match N, as N is often the primary driver in Fourier context.
+    
+    if (state.linkDn) {
+        state.desmosPoints = state.dftN;
+        desmosPointsSlider.value = state.dftN;
+        desmosPointsInput.value = state.dftN;
+        updateOutputs();
+    }
+    
+    saveState();
+};
 
 
 // Copy Handlers
@@ -203,6 +295,7 @@ setupCopy('copy-x-data', 'x-output', 'data');
 setupCopy('copy-x-full', 'x-output', 'full');
 setupCopy('copy-y-data', 'y-output', 'data');
 setupCopy('copy-y-full', 'y-output', 'full');
+setupCopy('copy-desmos', 'desmos-output', 'full');
 
 setupCopy('copy-n-data', 'n-output', 'data');
 setupCopy('copy-n-full', 'n-output', 'full');
@@ -1342,6 +1435,58 @@ function redraw() {
             ctx.beginPath();
             ctx.arc(end.x, end.y, wR, 0, Math.PI * 2);
             ctx.fill();
+
+            if (state.showApprox && item.selected) {
+                 const M = pts.length;
+                 let targetN = state.desmosPoints;
+                 if (targetN === -1 || targetN > M) targetN = M;
+                 
+                 let approxPts = [];
+                 if (targetN >= 2) {
+                    for(let k=0; k<targetN; k++) {
+                         let idx = Math.round(k * (M - 1) / (targetN - 1));
+                         if (idx >= M) idx = M - 1;
+                         approxPts.push(pts[idx]);
+                    }
+                 } else if (targetN === 1) {
+                    approxPts.push(pts[0]);
+                 }
+                 
+                 if (approxPts.length > 1) {
+                     ctx.save();
+                     ctx.beginPath();
+                     ctx.strokeStyle = 'rgba(50, 205, 50, 0.6)'; // Light Green
+                     // Thin
+                     ctx.lineWidth = 1 / s; 
+                     
+                     ctx.moveTo(approxPts[0].x, approxPts[0].y);
+                     for(let k=1; k<approxPts.length; k++) {
+                         ctx.lineTo(approxPts[k].x, approxPts[k].y);
+                     }
+                     ctx.stroke();
+                     ctx.restore();
+                 }
+            }
+            
+            // Fourier Approx Drawing
+            if (state.showFourier && item.selected && cachedFourierPath && cachedFourierPath.length > 0) {
+                 ctx.save();
+                 ctx.beginPath();
+                 // Thin and Dotted
+                 ctx.setLineDash([2 / s, 2 / s]);
+                 ctx.strokeStyle = '#e61414'; // Red-ish for distinction? Or just accent. Let's use Red for visibility as requested "new path".
+                 ctx.lineWidth = 1 / s;
+                 
+                 ctx.moveTo(cachedFourierPath[0].x, cachedFourierPath[0].y);
+                 for (let k = 1; k < cachedFourierPath.length; k++) {
+                     ctx.lineTo(cachedFourierPath[k].x, cachedFourierPath[k].y);
+                 }
+                 // Close loop? Fourier series are periodic.
+                 ctx.lineTo(cachedFourierPath[0].x, cachedFourierPath[0].y);
+                 
+                 ctx.stroke();
+                 ctx.restore();
+            }
         }
     });
 
@@ -1387,6 +1532,7 @@ function updateOutputs() {
     if (pts.length === 0) {
         document.getElementById('x-output').value = ``;
         document.getElementById('y-output').value = ``;
+        document.getElementById('desmos-output').value = ``;
         return;
     }
 
@@ -1396,6 +1542,58 @@ function updateOutputs() {
 
     document.getElementById('x-output').value = `[${xArr.join(', ')}]`;
     document.getElementById('y-output').value = `[${yArr.join(', ')}]`;
+    
+    // Desmos Format: [(x, y), ...]
+    // Sampling logic
+    const M = pts.length;
+    // Update Slider Max
+    desmosPointsSlider.max = M;
+    // If state.desmosPoints is -1 or > M, strictly cap or interpret?
+    // Request says "max by default".
+    // Let's assume on selection change we might want to reset to M if it was at max?
+    // Or just let user control. 
+    // If state.desmosPoints is higher than M, cap it for display but keep state?
+    // Let's simple cap for logic.
+    
+    // Auto-update max input if needed? 
+    // If we just loaded a curve, we might want to default to M if user hasn't touched it?
+    // Or just clamp.
+    
+    let targetN = state.desmosPoints;
+    if (targetN === -1 || targetN > M) targetN = M;
+    
+    // If we are just rendering labels, ensure inputs match state (unless dragging)
+    if (document.activeElement !== desmosPointsInput && document.activeElement !== desmosPointsSlider) {
+         desmosPointsInput.value = targetN;
+         desmosPointsSlider.value = targetN;
+    }
+    
+    let sampledPts = [];
+    if (targetN >= 2) {
+        // First and Last always included? "regular sample"
+        // indices: 0, ..., M-1
+        // We want N points.
+        // step = (M-1) / (N-1)
+        for(let i=0; i<targetN; i++) {
+             let idx = Math.round(i * (M - 1) / (targetN - 1));
+             if (idx >= M) idx = M - 1;
+             sampledPts.push(pts[idx]);
+        }
+    } else if (targetN === 1) {
+        sampledPts.push(pts[0]);
+    } else {
+        // 0 points
+        sampledPts = [];
+    }
+    
+    // If targetN == M, just take all to be safe against rounding skips
+    if (targetN === M) sampledPts = pts;
+
+    const desmosArr = sampledPts.map(p => `(${parseFloat(p.x.toFixed(dec))}, ${parseFloat(p.y.toFixed(dec))})`);
+    document.getElementById('desmos-output').value = `[${desmosArr.join(', ')}]`;
+    
+    // Also trigger redraw if showing approx (live update)
+    if (state.showApprox) redraw();
     
     // Clear warning if present
     const warn = document.getElementById('coord-warning');
@@ -1410,6 +1608,8 @@ function updateDFT() {
 
     if (pts.length === 0) {
         nOut.value = ''; rOut.value = ''; phiOut.value = '';
+        cachedFourierPath = null;
+        redraw();
         return;
     }
 
@@ -1492,6 +1692,56 @@ function updateDFT() {
     nOut.value = `const v = [${resultN.join(', ')}];`;
     rOut.value = `const R = [${resultR.join(', ')}];`;
     phiOut.value = `const phi = [${resultPhi.join(', ')}];`;
+    
+    // Compute Cache for Fourier Drawing
+    // We reconstruct M points using the N coefficients
+    // Or we can reconstruct more points for smoothness? 
+    // "displayed for the selected drawing only (similar to how the point approximation is displayed)"
+    // Usually Fourier approximation implies the continuous curve. 
+    // Let's use M points to match original resolution, or maybe 2*M? M is simpler.
+    // Inverse Transform:
+    // P[t] = Sum( R_j * exp(i * (phi_j + 2*PI*n_j*t/M)) )
+    
+    // Store coefficients for easier loop
+    const coeffs = [];
+    indices.forEach((m, idx) => {
+        coeffs.push({
+            n: resultN[idx], // The frequency index
+            r: resultR[idx],
+            phi: resultPhi[idx]
+        });
+    });
+    
+    const reconstructed = [];
+    for (let t = 0; t < M; t++) {
+        let rx = 0;
+        let ry = 0;
+        
+        for (let j = 0; j < coeffs.length; j++) {
+            const c = coeffs[j];
+            // Theta = 2 * PI * n * t / M + phi
+            const theta = (2 * Math.PI * c.n * t / M) + c.phi;
+            rx += c.r * Math.cos(theta);
+            ry += c.r * Math.sin(theta);
+        }
+        reconstructed.push({x: rx, y: ry});
+    }
+    
+    // If Cartesian, transform back to Screen to draw
+    if (state.cartesian) {
+        const cx = state.width / 2;
+        const cy = state.height / 2;
+        // x_screen = x + cx
+        // y_screen = cy - y
+        cachedFourierPath = reconstructed.map(p => ({
+            x: p.x + cx,
+            y: cy - p.y
+        }));
+    } else {
+        cachedFourierPath = reconstructed;
+    }
+    
+    if (state.showFourier) redraw();
 }
 
 function findHitCurve(x, y) {
@@ -1741,6 +1991,7 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'd') setMode('draw');
     if (e.key === 's') setMode('select');
     if (e.key === 'e') setMode('erase');
+    if (e.key === 'u') initCanvas();
 });
 
 // Setup Collapsibles

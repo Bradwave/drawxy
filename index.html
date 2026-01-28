@@ -30,7 +30,7 @@
 
             <!-- GROUP 1: CANVAS SETTINGS -->
             <div class="section-header-collapsible">
-                <div class="section-title" style="border:none; margin:0; padding:0;">Canvas Settings</div>
+                <div class="section-title reset">Canvas Settings</div>
                 <span class="material-symbols-outlined dropdown-icon">expand_more</span>
             </div>
             <div class="collapsible-content">
@@ -60,7 +60,7 @@
                         </label>
                     </div>
     
-                    <button id="create-btn" class="primary" style="width: 100%; margin-top: 4px;">
+                    <button id="create-btn" class="primary w-100 mt-4">
                         <span class="material-symbols-outlined">crop_free</span>
                         Update Canvas
                     </button>
@@ -69,7 +69,7 @@
 
             <!-- GROUP 2: BRUSH SETTINGS -->
             <div class="section-header-collapsible">
-                <div class="section-title" style="border:none; margin:0; padding:0;">Brush & Mode</div>
+                <div class="section-title reset">Brush & Mode</div>
                 <span class="material-symbols-outlined dropdown-icon">expand_more</span>
             </div>
             <div class="collapsible-content">
@@ -121,7 +121,7 @@
 
             <!-- GROUP 3: REFERENCE IMAGES -->
             <div class="section-header-collapsible">
-                <div class="section-title" style="border:none; margin:0; padding:0;">Reference Images</div>
+                <div class="section-title reset">Reference Images</div>
                 <span class="material-symbols-outlined dropdown-icon">expand_more</span>
             </div>
             <div class="collapsible-content">
@@ -136,12 +136,12 @@
 
             <!-- GROUP 4: DFT ANALYSIS -->
             <div class="section-header-collapsible">
-                <div class="section-title" style="border:none; margin:0; padding:0; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <div class="section-title reset flex">
                     <span>DFT Analysis</span>
-                    <div style="display: flex; align-items: center; gap: 6px; margin-right: 10px;" onclick="event.stopPropagation()">
-                        <span style="font-size: 0.7rem; text-transform: none; font-weight: 400;">Decimals:</span>
+                    <div class="dec-input-container" onclick="event.stopPropagation()">
+                        <span class="dec-label">Decimals:</span>
                         <input type="number" id="dft-decimals-input" value="2" min="0" max="10"
-                            style="width: 40px; padding: 2px 4px; font-size: 0.8rem;">
+                            class="dec-input">
                     </div>
                 </div>
                 <span class="material-symbols-outlined dropdown-icon">expand_more</span>
@@ -196,17 +196,25 @@
                         </div>
                         <textarea id="phi-output" readonly></textarea>
                     </div>
+                    
+                    <div class="control-row spaced-top">
+                        <span class="control-label">Show Fourier approx</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="show-fourier-check">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
                 </div>
             </div>
 
             <!-- GROUP 5: COORDINATES -->
             <div class="section-header-collapsible">
-                <div class="section-title" style="border:none; margin:0; padding:0; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <div class="section-title reset flex">
                     <span>Coordinates</span>
-                     <div style="display: flex; align-items: center; gap: 6px; margin-right: 10px;" onclick="event.stopPropagation()">
-                        <span style="font-size: 0.7rem; text-transform: none; font-weight: 400;">Decimals:</span>
+                    <div class="dec-input-container" onclick="event.stopPropagation()">
+                        <span class="dec-label">Decimals:</span>
                         <input type="number" id="coord-decimals-input" value="2" min="0" max="10"
-                            style="width: 40px; padding: 2px 4px; font-size: 0.8rem;">
+                            class="dec-input">
                     </div>
                 </div>
                 <span class="material-symbols-outlined dropdown-icon">expand_more</span>
@@ -247,7 +255,43 @@
                         </div>
                     </div>
                     
-                    <div id="coord-warning" style="color: var(--color-accent); font-size: 0.8rem; margin-top: 8px; display: none; background: rgba(20, 132, 230, 0.1); padding: 8px; border-radius: 4px; border: 1px solid rgba(20, 132, 230, 0.2);">
+                    <div class="control-row spaced-top">
+                        <span class="control-label">Number of points</span>
+                        <input type="number" id="desmos-points-input" value="0" min="0" step="1">
+                    </div>
+                    <input type="range" id="desmos-points-slider" min="0" max="100" step="1" value="0">
+                    <p class="help-text">
+                        Samples points at regular intervals.
+                    </p>
+
+                    <div class="output-group">
+                        <div class="output-header">
+                            <span class="output-label">(x, y) - Desmos format</span>
+                            <div class="copy-actions">
+                                <button class="copy-btn icon-only" id="copy-desmos" title="Copy"><span
+                                        class="material-symbols-outlined">content_copy</span></button>
+                            </div>
+                        </div>
+                        <textarea id="desmos-output" readonly></textarea>
+                    </div>
+
+                    <div class="control-row spaced-small">
+                        <span class="control-label">Show point approx</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="show-approx-check">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="control-row spaced-small">
+                        <span class="control-label">Link n. of points and coeffs</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="link-dn-check">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div id="coord-warning" class="warning-box">
                         <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 16px; margin-right: 4px;">warning</span>
                         Invalid coordinates format.
                     </div>
@@ -256,40 +300,40 @@
 
             <!-- GROUP 6: DATA / EXPORT -->
             <div class="section-header-collapsible">
-                <div class="section-title" style="border:none; margin:0; padding:0;">Data / Export</div>
+                <div class="section-title reset">Data / Export</div>
                 <span class="material-symbols-outlined dropdown-icon">expand_more</span>
             </div>
             <div class="collapsible-content" style="display: none;">
                 <div class="control-group">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                        <span class="control-label" style="margin: 0;">Export Selected Only</span>
+                    <div class="export-row">
+                        <span class="control-label no-margin">Export Selected Only</span>
                         <label class="toggle-switch">
                             <input type="checkbox" id="export-selected-only">
                             <span class="slider"></span>
                         </label>
                     </div>
                     
-                    <button class="secondary" onclick="exportData()" style="width: 100%; margin-bottom: 8px;">
+                    <button class="secondary w-100 mb-8" onclick="exportData()">
                         <span class="material-symbols-outlined">download</span> Export JSON
                     </button>
                     <input type="file" id="import-json-input" accept=".json" style="display: none;" onchange="importData(this)">
-                    <button class="secondary" onclick="document.getElementById('import-json-input').click()" style="width: 100%; margin-bottom: 12px;">
+                    <button class="secondary w-100 mb-12" onclick="document.getElementById('import-json-input').click()">
                         <span class="material-symbols-outlined">upload</span> Import JSON
                     </button>
                     
-                    <div style="border-top: 1px solid #eee; margin: 8px 0;"></div>
+                    <div class="divider"></div>
                     <div class="control-label">Import Coordinates</div>
                     
-                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                        <div style="font-size: 0.8rem; color: var(--color-text-muted); min-width: 20px; font-weight: bold;">X:</div>
-                         <input type="text" id="import-x" placeholder="[1, 2, ...]" oninput="validateCoordImport()" style="font-family: var(--font-mono); flex: 1; padding: 4px; font-size: 0.8rem; border: 1px solid var(--color-border); border-radius: 4px;">
+                    <div class="import-row">
+                        <div class="import-label">X:</div>
+                         <input type="text" id="import-x" placeholder="[1, 2, ...]" oninput="validateCoordImport()" class="import-input">
                     </div>
                     
-                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                         <div style="font-size: 0.8rem; color: var(--color-text-muted); min-width: 20px; font-weight: bold;">Y:</div>
-                         <input type="text" id="import-y" placeholder="[1, 2, ...]" oninput="validateCoordImport()" style="font-family: var(--font-mono); flex: 1; padding: 4px; font-size: 0.8rem; border: 1px solid var(--color-border); border-radius: 4px;">
+                    <div class="import-row">
+                         <div class="import-label">Y:</div>
+                         <input type="text" id="import-y" placeholder="[1, 2, ...]" oninput="validateCoordImport()" class="import-input">
                     </div>
-                    <button id="add-coords-btn" class="primary" style="width: 100%;" disabled onclick="addDrawingFromCoords()">
+                    <button id="add-coords-btn" class="primary w-100" disabled onclick="addDrawingFromCoords()">
                         <span class="material-symbols-outlined">add</span> Add Drawing
                     </button>
                 </div>
@@ -302,7 +346,7 @@
                 </button>
             </div>
 
-            <div style="height: 24px;"></div> <!-- Spacer -->
+            <div class="spacer-bottom"></div> <!-- Spacer -->
         </aside>
 
         <!-- Canvas Area -->
