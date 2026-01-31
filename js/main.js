@@ -748,13 +748,16 @@ function handleMove(e) {
     if (canvas) {
         if (state.mode === 'select' && !isDragging && !isDraggingImage && !resizeHandle && !resizeCurveMode && !isCtrlPanning) {
             let cursor = 'default';
-            const imgHit = hitTestImage(pos.x, pos.y);
-            if (imgHit) {
-                cursor = imgHit.type === 'resize' ? 'nwse-resize' : 'move';
-            } else if (hitTestCurveHandle(pos.x, pos.y)) {
+
+            if (hitTestCurveHandle(pos.x, pos.y)) {
                  cursor = 'nwse-resize';
             } else if (findHitCurve(pos.x, pos.y) !== -1) {
                  cursor = 'move';
+            } else {
+                const imgHit = hitTestImage(pos.x, pos.y);
+                if (imgHit) {
+                    cursor = imgHit.type === 'resize' ? 'nwse-resize' : 'move';
+                }
             }
             canvas.style.cursor = cursor;
         } else if (isCtrlPanning) {
@@ -1003,21 +1006,6 @@ function handleMouseDown(e) {
     const pos = getCanvasCoords(e);
 
     if (state.mode === 'select') {
-        const hitData = hitTestImage(pos.x, pos.y);
-        if (hitData) {
-             selectedImageId = hitData.img.id;
-             selectedIndex = -1; // Deselect curve if image is selected
-             dragLastPos = pos;
-             if (hitData.type === 'resize') {
-                 resizeHandle = 'se';
-             } else {
-                 isDraggingImage = true;
-             }
-             renderRefUI();
-             redraw();
-             return;
-        }
-        
         if (hitTestCurveHandle(pos.x, pos.y)) {
              resizeCurveMode = true;
              curveStartBounds = getCurveBounds(selectedIndex);
@@ -1034,6 +1022,21 @@ function handleMouseDown(e) {
              renderRefUI();
              redraw();
              updateUIState();
+             return;
+        }
+
+        const hitData = hitTestImage(pos.x, pos.y);
+        if (hitData) {
+             selectedImageId = hitData.img.id;
+             selectedIndex = -1; // Deselect curve if image is selected
+             dragLastPos = pos;
+             if (hitData.type === 'resize') {
+                 resizeHandle = 'se';
+             } else {
+                 isDraggingImage = true;
+             }
+             renderRefUI();
+             redraw();
              return;
         }
         
